@@ -57,7 +57,7 @@ user_agent = [
 ]
 
 telepathy_file = "./telepathy_files/"
-json_file = telepathy_file + "json_files/"
-login = telepathy_file + "login.txt"
-log_file = telepathy_file + "log.csv"
-export_file = telepathy_file + "export.csv"
+json_file = f"{telepathy_file}json_files/"
+login = f"{telepathy_file}login.txt"
+log_file = f"{telepathy_file}log.csv"
+export_file = f"{telepathy_file}export.csv"

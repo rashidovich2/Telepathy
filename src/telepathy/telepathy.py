@@ -110,19 +110,18 @@ class Group_Chat_Analisys:
         self._filetime = filetime
         self._alphanumeric = self.calculate_alfanumeric()
         self.user_check = self.location_check = False
-        self.basic = True if target else False
-        self.reply_analysis = True if replies else False
-        self.forwards_check = True if forwards else False
-        self.comp_check = True if comprehensive else False
-        self.media_archive = True if media else False
-        self.json_check = True if json else False
-        self.translate_check = True if translate else False
+        self.basic = bool(target)
+        self.reply_analysis = bool(replies)
+        self.forwards_check = bool(forwards)
+        self.comp_check = bool(comprehensive)
+        self.media_archive = bool(media)
+        self.json_check = bool(json)
+        self.translate_check = bool(translate)
         self.last_date, self.chunk_size, self.user_language = None, 1000, "en"
         self.create_dirs_files()
 
     def telepathy_log_run(self):
-        log = []
-        log.append(
+        log = [
             [
                 self._filetime,
                 self._entity.title,
@@ -140,7 +139,7 @@ class Group_Chat_Analisys:
                 self._mtime,
                 self._group_status,
             ]
-        )
+        ]
         log_df = pd.DataFrame(
             log,
             columns=[
@@ -168,11 +167,7 @@ class Group_Chat_Analisys:
             log_df.to_csv(self._log_file, sep=";", mode="a", index=False, header=False)
 
     def calculate_alfanumeric(self):
-        alphanumeric = ""
-        for character in self._target:
-            if character.isalnum():
-                alphanumeric += character
-        return alphanumeric
+        return "".join(character for character in self._target if character.isalnum())
 
     async def retrieve_entity(self, _target):
         current_entity = None
@@ -186,7 +181,6 @@ class Group_Chat_Analisys:
                 target = int(_target)
             except:
                 pass
-            pass
         if not current_entity:
             try:
                 current_entity = await self.client.get_entity(PeerChannel(_target))
@@ -240,9 +234,7 @@ class Group_Chat_Analisys:
         found_participants = len(all_participants)
         found_percentage = 0
         if self._total_participants > 0:
-            found_percentage = (
-                int(found_participants) / int(self._total_participants) * 100
-            )
+            found_percentage = found_participants / int(self._total_participants) * 100
         print("\n")
         color_print_green(" [+] Memberlist fetched", "")
         return found_participants, found_percentage
@@ -261,36 +253,10 @@ class Group_Chat_Analisys:
                     " [!] ",
                     "You can't search for users using flag -c, run Telepathy using the flag -u.",
                 )
-                exit(1)
             else:
-                color_print_green(
-                    " [!] ", "Telegram handle: {} wasn't found. !!!!".format(_handle)
-                )
-                exit(1)
+                color_print_green(" [!] ", f"Telegram handle: {_handle} wasn't found. !!!!")
+            exit(1)
             return
-        elif _check_user:
-            if _result["entity"].__class__ == User:
-                _result = {"chat_type": "User"}
-                substring_1 = "PeerUser"
-
-                if _result["entity"].username is not None:
-                    _result["username"] = _result["entity"].username
-                else:
-                    username = "none"
-
-                string_1 = str(_result["entity"].user_id)
-                if substring_1 in string_1:
-                    user_id = re.sub(
-                        "[^0-9]",
-                        "",
-                        string_1,
-                    )
-                    user_id = await self.client.get_entity(PeerUser(int(user_id)))
-                    user_id = str(user_id)
-                    _result["user_id"] = user_id
-                    _result["first_name"] = _result["entity"].first_name
-                    return _result
-
         _result["total_participants"] = 0
         (
             _result["chat_type"],
@@ -353,9 +319,7 @@ class Group_Chat_Analisys:
             ios_restriction = _result["entity"].restriction_reason[0]
             if 1 in _result["entity"].restriction_reason:
                 android_restriction = _result["entity"].restriction_reason[1]
-                _result["group_status"] = (
-                    str(ios_restriction) + ", " + str(android_restriction)
-                )
+                _result["group_status"] = f"{str(ios_restriction)}, {str(android_restriction)}"
             else:
                 _result["group_status"] = str(ios_restriction)
         else:
@@ -571,10 +535,7 @@ class Group_Chat_Analisys:
                 setattr(self._entity, "memberlist_filename", self.memberlist_filename)
             else:
                 setattr(self._entity, "found_participants", self._found_participants)
-            print_flag = "group_recap"
-
-            if self._chat_type == "Channel":
-                print_flag = "channel_recap"
+            print_flag = "channel_recap" if self._chat_type == "Channel" else "group_recap"
             print_shell(print_flag, self._entity)
             self.telepathy_log_run()
             await self.process_group_channel_messages(self._target)
@@ -614,9 +575,7 @@ class Group_Chat_Analisys:
                         ios_restriction = Dialog.entity.restriction_reason[0]
                         if 1 in Dialog.entity.restriction_reason:
                             android_restriction = Dialog.entity.restriction_reason[1]
-                            self._group_status = (
-                                str(ios_restriction) + ", " + str(android_restriction)
-                            )
+                            self._group_status = f"{str(ios_restriction)}, {str(android_restriction)}"
                         else:
                             self._group_status = str(ios_restriction)
                     else:
@@ -697,12 +656,11 @@ class Group_Chat_Analisys:
         else:
             count = history.count
 
-        if cc:
-            self.history = history
-            self.history_count = count
-            return None, None
-        else:
+        if not cc:
             return history, count
+        self.history = history
+        self.history_count = count
+        return None, None
 
     async def process_group_channel_messages(self, _target):
         if self.forwards_check is True and self.comp_check is False:

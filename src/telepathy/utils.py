@@ -9,11 +9,11 @@ import os
 
 
 def createPlaceholdeCls():
+
     class Object(object):
         pass
 
-    a = Object()
-    return a
+    return Object()
 
 
 def print_banner():
@@ -42,44 +42,25 @@ def parse_tg_date(dd):
     hour = str(format(dd.hour, "02d"))
     minute = str(format(dd.minute, "02d"))
     second = str(format(dd.second, "02d"))
-    date = year + "-" + month + "-" + day
-    mtime = hour + ":" + minute + ":" + second
-    timestamp = date + "T" + mtime + "+00:00"
+    date = f"{year}-{month}-{day}"
+    mtime = f"{hour}:{minute}:{second}"
+    timestamp = f"{date}T{mtime}+00:00"
     return {"timestamp": timestamp, "date": date, "mtime": mtime}
 
 
 def populate_user(user, group_or_chat):
-    if user.username:
-        username = user.username
-    else:
-        username = "N/A"
-    if user.first_name:
-        first_name = user.first_name
-    else:
-        first_name = ""
-    if user.last_name:
-        last_name = user.last_name
-    else:
-        last_name = ""
-    if user.phone:
-        phone = user.phone
-    else:
-        phone = "N/A"
-    if user.id:
-        user_id = user.id
-    else:
-        user_id = "N/A"
-    full_name = (first_name + " " + last_name).strip()
+    username = user.username if user.username else "N/A"
+    first_name = user.first_name if user.first_name else ""
+    last_name = user.last_name if user.last_name else ""
+    phone = user.phone if user.phone else "N/A"
+    user_id = user.id if user.id else "N/A"
+    full_name = f"{first_name} {last_name}".strip()
     return [username, full_name, user_id, phone, group_or_chat]
 
 
 def process_message(mess, user_lang):
 
-    if mess is not None:
-        mess_txt = '"' + mess + '"'
-    else:
-        mess_txt = "None"
-
+    mess_txt = f'"{mess}"' if mess is not None else "None"
     if mess_txt != "None":
         translator = Translator()
         detection = translator.detect(mess_txt)
@@ -101,11 +82,7 @@ def process_message(mess, user_lang):
 
 
 def process_description(desc, user_lang):
-    if desc is not None:
-        desc_txt = '"' + desc + '"'
-    else:
-        desc_txt = "None"
-
+    desc_txt = f'"{desc}"' if desc is not None else "None"
     if desc_txt != "None":
         translator = Translator()
         detection = translator.detect(desc_txt)
@@ -175,7 +152,7 @@ def parse_html_page(url):
 
 
 def generate_textwrap(text_string, size=70):
-    trans_descript = Fore.GREEN + f"{text_string} " + Style.RESET_ALL
+    trans_descript = f"{Fore.GREEN}{text_string} {Style.RESET_ALL}"
     prefix = trans_descript
     return textwrap.TextWrapper(
         initial_indent=prefix,
